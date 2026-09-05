@@ -1,28 +1,43 @@
-import express, { type Express, type Request, type Response } from 'express';
-import mongoose from 'mongoose';
-import 'dotenv/config';
-// import { sendCommonEmail } from './services/email.ts';
-import authRoutes from './routes/auth.routes.ts';
+import express, { type Express, type Request, type Response } from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import "dotenv/config";
 
-const app = express();
-const port = process.env.PORT || 3000;
+import authRoutes from "./routes/auth.routes.ts";
 
-mongoose.connect(process.env.MONGO_URI as string)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
+const app: Express = express();
+const port = process.env.PORT || 3021;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
+mongoose
+  .connect(process.env.MONGO_URI as string)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error(err));
+
+/**
+ * Middleware
+ */
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  }),
+);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/**
+ * Routes
+ */
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello World!");
 });
 
 app.use("/api/auth", authRoutes);
 
-app.listen(port, async () => {
+/**
+ * Start server
+ */
+app.listen(port, () => {
   console.log(`Aramyaw API listening on port ${port}`);
-
-  // await sendCommonEmail(
-  //   ['jhonreymendiola@gmail.com'],
-  //   'Aramyaw Test Email',
-  //   '<h1>Hello from Aramyaw!</h1>'
-  // );
 });
