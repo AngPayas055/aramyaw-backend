@@ -13,9 +13,6 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error(err));
 
-/**
- * Middleware
- */
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -26,18 +23,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/**
- * Routes
- */
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
 app.use("/api/auth", authRoutes);
 
-/**
- * Start server
- */
 app.listen(port, () => {
   console.log(`Aramyaw API listening on port ${port}`);
 });
