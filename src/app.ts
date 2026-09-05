@@ -1,7 +1,8 @@
 import express, { type Express, type Request, type Response } from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import { sendCommonEmail } from './services/email.ts';
+// import { sendCommonEmail } from './services/email.ts';
+import authRoutes from './routes/auth.routes.ts';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -14,12 +15,14 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });
 
+app.use("/api/auth", authRoutes);
+
 app.listen(port, async () => {
   console.log(`Aramyaw API listening on port ${port}`);
 
-  await sendCommonEmail(
-    ['jhonreymendiola@gmail.com'],
-    'Aramyaw Test Email',
-    '<h1>Hello from Aramyaw!</h1>'
-  );
+  // await sendCommonEmail(
+  //   ['jhonreymendiola@gmail.com'],
+  //   'Aramyaw Test Email',
+  //   '<h1>Hello from Aramyaw!</h1>'
+  // );
 });
