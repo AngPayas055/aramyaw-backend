@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
-
+import { sendCommonEmail } from "./services/email.ts";
 import authRoutes from "./routes/auth.routes.ts";
 
 const app: Express = express();
