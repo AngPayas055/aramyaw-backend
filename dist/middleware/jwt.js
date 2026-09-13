@@ -24,43 +24,36 @@ export const authenticateToken = async (req, res, next) => {
     }
 };
 const verifyJWT = async (token) => {
-    return new Promise((resolve) => {
+    try {
         const secret = process.env.JWT_SECRET;
-        jwt.verify(token, secret, async (err, decoded) => {
-            try {
-                if (err || !decoded || typeof decoded === "string") {
-                    resolve({
-                        success: false,
-                    });
-                    return;
-                }
-                const payload = decoded;
-                const user = await User.findOne({
-                    email: payload.email,
-                });
-                if (!user) {
-                    resolve({
-                        success: false,
-                    });
-                    return;
-                }
-                resolve({
-                    success: true,
-                    user: {
-                        id: user._id.toString(),
-                        email: user.email,
-                        role: user.role,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        contactNumber: user.contactNumber,
-                    },
-                });
-            }
-            catch (error) {
-                resolve({
-                    success: false,
-                });
-            }
-        });
-    });
+        if (!secret) {
+            throw new Error("JWT_SECRET is not configured.");
+        }
+        const decoded = jwt.verify(token, secret);
+        if (typeof decoded === "string" ||
+            typeof decoded.userId !== "string") {
+            console.error("JWT verification failed: Missing userId.");
+            return { success: false };
+        }
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            console.error("JWT verification failed: User not found.");
+            return { success: false };
+        }
+        return {
+            success: true,
+            user: {
+                id: user._id.toString(),
+                email: user.email,
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                contactNumber: user.contactNumber,
+            },
+        };
+    }
+    catch (error) {
+        console.error("JWT verification failed:", error instanceof Error ? error.message : "Unknown error");
+        return { success: false };
+    }
 };

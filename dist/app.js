@@ -4,6 +4,7 @@ import cors from "cors";
 import "dotenv/config";
 import { sendCommonEmail } from "./services/email.js";
 import authRoutes from "./routes/auth.routes.js";
+import seasonRoutes from "./routes/season.routes.js";
 const app = express();
 const port = process.env.PORT || 3021;
 mongoose
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 app.use("/api/auth", authRoutes);
+app.use("/api/seasons", seasonRoutes);
 app.listen(port, () => {
     console.log(`Aramyaw API listening on port ${port}`);
 });
