@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import {
   createDivision,
   getDivisions,
@@ -6,16 +7,23 @@ import {
   updateDivision,
 } from "../controllers/division.controller.ts";
 
+import { authenticateToken } from "../middleware/jwt.ts";
+import { requireAdmin } from "../middleware/requireAdmin.ts";
+
 const router = Router({ mergeParams: true });
 
-// Authentication and admin authorization run in season.routes.ts.
+const adminOnly = [authenticateToken, requireAdmin];
 
-router.route("/")
+// Public GET, protected POST
+router
+  .route("/")
   .get(getDivisions)
-  .post(createDivision);
+  .post(...adminOnly, createDivision);
 
-router.route("/:divisionId")
+// Public GET, protected PATCH
+router
+  .route("/:divisionId")
   .get(getDivisionById)
-  .patch(updateDivision);
+  .patch(...adminOnly, updateDivision);
 
 export default router;

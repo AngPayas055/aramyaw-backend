@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import {
   createSeason,
   getSeasons,
@@ -12,16 +13,21 @@ import divisionRoutes from "./division.routes.ts";
 
 const router = Router();
 
-router.use(authenticateToken, requireAdmin);
+const adminOnly = [authenticateToken, requireAdmin];
 
-router.route("/")
+// Public GET, protected POST
+router
+  .route("/")
   .get(getSeasons)
-  .post(createSeason);
+  .post(...adminOnly, createSeason);
 
+// Division routes
 router.use("/:seasonId/divisions", divisionRoutes);
 
-router.route("/:seasonId")
+// Public GET, protected PATCH
+router
+  .route("/:seasonId")
   .get(getSeasonById)
-  .patch(updateSeason);
+  .patch(...adminOnly, updateSeason);
 
 export default router;
