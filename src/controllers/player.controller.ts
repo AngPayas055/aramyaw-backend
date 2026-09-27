@@ -89,7 +89,6 @@ function parsePlayer(
     body.birthDate,
     division.ageCutoffDate || new Date(),
   );
-  console.log(`Calculated age: ${age} (cutoff: ${division.ageCutoffDate})`);
   if (
     (division.minAge != null && age < division.minAge) ||
     (division.maxAge != null && age > division.maxAge)

@@ -48,7 +48,6 @@ function parsePlayer(body, division) {
         return { error: "Enter a valid name and birth date." };
     }
     const age = ageAt(body.birthDate, division.ageCutoffDate || new Date());
-    console.log(`Calculated age: ${age} (cutoff: ${division.ageCutoffDate})`);
     if ((division.minAge != null && age < division.minAge) ||
         (division.maxAge != null && age > division.maxAge)) {
         return {
