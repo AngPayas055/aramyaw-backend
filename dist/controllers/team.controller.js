@@ -102,7 +102,7 @@ export async function getMyTeams(req, res) {
             season: req.params.seasonId,
         })
             .populate("season", "name status")
-            .populate("division", "name")
+            .populate("division", "name description minAge maxAge ageCutoffDate minPlayers maxPlayers registrationFeeCentavos")
             .sort({ createdAt: -1 });
         res.status(200).json({ teams });
     }
