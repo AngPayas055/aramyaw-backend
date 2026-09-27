@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { createTeam, getMyTeams, getSeasonTeams, reviewTeam, } from "../controllers/team.controller.js";
+import { authenticateToken } from "../middleware/jwt.js";
+import { requireAdmin } from "../middleware/requireAdmin.js";
+const router = Router({ mergeParams: true });
+router.get("/mine", authenticateToken, getMyTeams);
+router
+    .route("/")
+    .post(authenticateToken, createTeam)
+    .get(authenticateToken, requireAdmin, getSeasonTeams);
+router.patch("/:teamId/review", authenticateToken, requireAdmin, reviewTeam);
+export default router;
