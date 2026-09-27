@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import teamRoutes from "./team.routes.ts";
 import {
   createSeason,
   getSeasons,
@@ -23,7 +23,7 @@ router
 
 // Division routes
 router.use("/:seasonId/divisions", divisionRoutes);
-
+router.use("/:seasonId/teams", teamRoutes);
 // Public GET, protected PATCH
 router
   .route("/:seasonId")
