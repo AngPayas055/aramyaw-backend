@@ -248,3 +248,39 @@ export async function deletePlayer(req: AuthRequest, res: Response) {
     res.status(500).json({ message: "Failed to remove player." });
   }
 }
+
+export async function listTeamPlayersForAdmin(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { seasonId, teamId } = req.params;
+
+    if (
+      !mongoose.isObjectIdOrHexString(seasonId) ||
+      !mongoose.isObjectIdOrHexString(teamId)
+    ) {
+      res.status(400).json({ message: "Invalid team ID." });
+      return;
+    }
+
+    const team = await Team.findOne({
+      _id: teamId,
+      season: seasonId,
+    });
+
+    if (!team) {
+      res.status(404).json({ message: "Team not found." });
+      return;
+    }
+
+    const players = await Player.find({ team: team._id }).sort({
+      createdAt: 1,
+    });
+
+    res.json({ players });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load players." });
+  }
+}

@@ -14,10 +14,17 @@ import {
   createPlayer,
   updatePlayer,
   deletePlayer,
+  listTeamPlayersForAdmin
 } from "../controllers/player.controller.ts";
 
 const router = Router({ mergeParams: true });
 
+router.get(
+  "/:teamId/roster",
+  authenticateToken,
+  requireAdmin,
+  listTeamPlayersForAdmin,
+);
 router.get("/:teamId/players", authenticateToken, listPlayers);
 router.post("/:teamId/players", authenticateToken, createPlayer);
 router.patch(
