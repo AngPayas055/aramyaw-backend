@@ -2,9 +2,9 @@ import express, { type Express, type Request, type Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
-import { sendCommonEmail } from "./services/email.ts";
 import authRoutes from "./routes/auth.routes.ts";
 import seasonRoutes from "./routes/season.routes.ts";
+import adminRoutes from "./routes/admin.routes.ts";
 
 const app: Express = express();
 const port = process.env.PORT || 3021;
@@ -30,6 +30,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/seasons", seasonRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.listen(port, () => {
   console.log(`Aramyaw API listening on port ${port}`);
