@@ -14,7 +14,8 @@ import {
   createPlayer,
   updatePlayer,
   deletePlayer,
-  listTeamPlayersForAdmin
+  listTeamPlayersForAdmin,
+  updatePlayerStatus
 } from "../controllers/player.controller.ts";
 
 const router = Router({ mergeParams: true });
@@ -50,6 +51,13 @@ router.patch(
   authenticateToken,
   requireAdmin,
   reviewTeam,
+);
+
+router.patch(
+  "/:teamId/players/:playerId/status",
+  authenticateToken,
+  requireAdmin,
+  updatePlayerStatus,
 );
 
 export default router;
