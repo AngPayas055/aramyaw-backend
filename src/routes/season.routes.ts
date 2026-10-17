@@ -1,5 +1,6 @@
 import { Router } from "express";
 import teamRoutes from "./team.routes.ts";
+import paymentRoutes from "./payment.routes.ts";
 import {
   createSeason,
   getSeasons,
@@ -23,6 +24,11 @@ router
 
 // Division routes
 router.use("/:seasonId/divisions", divisionRoutes);
+router.use(
+  "/:seasonId/teams/:teamId/payments",
+  paymentRoutes,
+);
+router.use("/:seasonId/teams", teamRoutes);
 router.use("/:seasonId/teams", teamRoutes);
 // Public GET, protected PATCH
 router
