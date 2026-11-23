@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Payment from "../models/Payment.js";
 import Team from "../models/Team.js";
 import Division from "../models/Division.js";
+import { getTeamPaymentSummary } from "./team-payment-summary.js";
 const paymentAccounts = [
     {
         method: "gcash",
@@ -70,18 +71,9 @@ export async function getTeamPayments(req, res) {
             res.status(404).json({ message: "Division not found." });
             return;
         }
-        // Preserve the fee captured by the first payment attempt.
-        const firstPayment = payments[payments.length - 1];
-        const amountDueCentavos = firstPayment?.expectedAmountCentavos ??
-            division.registrationFeeCentavos;
-        const activePayment = payments.find((payment) => payment.status === "pending" || payment.status === "paid");
         res.json({
-            amountDueCentavos,
+            ...getTeamPaymentSummary(division.registrationFeeCentavos, payments),
             currency: "PHP",
-            paymentStatus: amountDueCentavos === 0
-                ? "not_required"
-                : activePayment?.status ??
-                    (payments.length ? "rejected" : "unpaid"),
             accounts: paymentAccounts,
             payments,
         });

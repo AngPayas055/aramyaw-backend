@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Team from "../models/Team.js";
 import Season from "../models/Season.js";
 import Division from "../models/Division.js";
+import Payment from "../models/Payment.js";
+import { getTeamPaymentSummary } from "./team-payment-summary.js";
 function handleError(error, res) {
     if (error instanceof mongoose.Error.ValidationError ||
         error instanceof mongoose.Error.CastError) {
@@ -123,10 +125,32 @@ export async function getSeasonTeams(req, res) {
             return;
         }
         const teams = await Team.find({ season: seasonId })
-            .populate("division", "name")
+            .populate("division", "name registrationFeeCentavos")
             .populate("manager", "firstName lastName email contactNumber")
-            .sort({ createdAt: -1 });
-        res.status(200).json({ teams });
+            .sort({ createdAt: -1 })
+            .lean();
+        const payments = await Payment.find({
+            team: { $in: teams.map((team) => team._id) },
+        })
+            .select("team status expectedAmountCentavos")
+            .sort({ createdAt: -1 })
+            .lean();
+        const paymentsByTeam = new Map();
+        for (const payment of payments) {
+            const teamId = payment.team.toString();
+            const attempts = paymentsByTeam.get(teamId) ?? [];
+            attempts.push(payment);
+            paymentsByTeam.set(teamId, attempts);
+        }
+        res.status(200).json({
+            teams: teams.map(({ division, ...team }) => ({
+                ...team,
+                division: division && { _id: division._id, name: division.name },
+                paymentStatus: division
+                    ? getTeamPaymentSummary(division.registrationFeeCentavos, paymentsByTeam.get(team._id.toString()) ?? []).paymentStatus
+                    : null,
+            })),
+        });
     }
     catch (error) {
         handleError(error, res);

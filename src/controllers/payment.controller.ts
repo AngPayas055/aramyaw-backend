@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Payment from "../models/Payment.ts";
 import Team from "../models/Team.ts";
 import Division from "../models/Division.ts";
+import { getTeamPaymentSummary } from "./team-payment-summary.ts";
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -105,25 +106,9 @@ export async function getTeamPayments(
       return;
     }
 
-    // Preserve the fee captured by the first payment attempt.
-    const firstPayment = payments[payments.length - 1];
-    const amountDueCentavos =
-      firstPayment?.expectedAmountCentavos ??
-      division.registrationFeeCentavos;
-
-    const activePayment = payments.find(
-      (payment) =>
-        payment.status === "pending" || payment.status === "paid",
-    );
-
     res.json({
-      amountDueCentavos,
+      ...getTeamPaymentSummary(division.registrationFeeCentavos, payments),
       currency: "PHP",
-      paymentStatus:
-        amountDueCentavos === 0
-          ? "not_required"
-          : activePayment?.status ??
-            (payments.length ? "rejected" : "unpaid"),
       accounts: paymentAccounts,
       payments,
     });
