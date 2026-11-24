@@ -312,6 +312,27 @@ export async function updatePlayerStatus(req, res) {
             res.status(404).json({ message: "Player not found." });
             return;
         }
+        const birthDate = body.birthDate;
+        if (birthDate !== undefined && birthDate !== player.birthDate) {
+            const division = await Division.findById(team.division);
+            if (!division) {
+                res.status(404).json({ message: "Division not found." });
+                return;
+            }
+            const parsed = parsePlayer({
+                firstName: player.firstName,
+                lastName: player.lastName,
+                birthDate,
+                jerseyNumber: player.jerseyNumber,
+            }, division);
+            if (!parsed.values) {
+                res.status(400).json({
+                    message: parsed.error ?? "Enter a valid birth date.",
+                });
+                return;
+            }
+            player.birthDate = parsed.values.birthDate;
+        }
         const now = new Date();
         const reviewer = new mongoose.Types.ObjectId(adminId);
         if (verificationStatus === "verified" &&
