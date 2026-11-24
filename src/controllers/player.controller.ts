@@ -226,6 +226,16 @@ export async function updatePlayer(req: AuthRequest, res: Response) {
       return;
     }
 
+    if (
+      player.verificationStatus === "verified" &&
+      values.birthDate !== player.birthDate
+    ) {
+      res.status(403).json({
+        message: "Only an admin can change a verified player's birth date.",
+      });
+      return;
+    }
+    
     const identityChanged =
       player.firstName !== values.firstName ||
       player.lastName !== values.lastName ||
