@@ -75,6 +75,10 @@ const divisionSchema = new Schema({
         type: Boolean,
         default: true,
     },
+    playerRegistrationFeeCentavos: {
+        type: Number,
+        min: 0,
+    },
 }, {
     timestamps: true,
 });

@@ -21,6 +21,7 @@ export interface IDivision extends Document {
   tournamentFormat: TournamentFormat;
   playoffTeams?: number;
   registrationEnabled: boolean;
+  playerRegistrationFeeCentavos?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +114,10 @@ const divisionSchema = new Schema<IDivision>(
     registrationEnabled: {
       type: Boolean,
       default: true,
+    },
+    playerRegistrationFeeCentavos: {
+      type: Number,
+      min: 0,
     },
   },
   {

@@ -5,7 +5,6 @@ import { requireAdmin } from "../middleware/requireAdmin.ts";
 
 import {
   getTeamPayments,
-  submitTeamPayment,
   reviewPayment,
 } from "../controllers/payment.controller.ts";
 
@@ -13,10 +12,13 @@ const router = Router({ mergeParams: true });
 
 router.use(authenticateToken);
 
-router
-  .route("/")
-  .get(getTeamPayments)
-  .post(submitTeamPayment);
+router.get("/", getTeamPayments);
+
+router.post("/", (_req, res) => {
+  res.status(410).json({
+    message: "Team registration is free. Players pay their own registration fee.",
+  });
+});
 
 router.patch(
   "/:paymentId/review",
