@@ -52,6 +52,7 @@ function validateDivision(division: IDivision): string | null {
     "maxPlayers",
     "registrationFeeCentavos",
     "playoffTeams",
+    "playerRegistrationFeeCentavos",
   ] as const;
 
   for (const field of integerFields) {
@@ -314,6 +315,7 @@ export async function updateDivision(
       "maxAge",
       "ageCutoffDate",
       "playoffTeams",
+      "playerRegistrationFeeCentavos",
     ] as const;
 
     for (const field of optionalFields) {
