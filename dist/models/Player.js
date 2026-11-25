@@ -6,6 +6,10 @@ const playerSchema = new Schema({
         required: true,
         index: true,
     },
+    userAccount: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+    },
     firstName: {
         type: String,
         required: true,
@@ -60,5 +64,9 @@ const playerSchema = new Schema({
     },
     statusUpdatedAt: Date,
 }, { timestamps: true });
+playerSchema.index({ team: 1, userAccount: 1 }, {
+    unique: true,
+    partialFilterExpression: { userAccount: { $type: "objectId" } },
+});
 const Player = mongoose.models.Player || mongoose.model("Player", playerSchema);
 export default Player;

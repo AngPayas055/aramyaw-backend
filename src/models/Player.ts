@@ -3,6 +3,7 @@ import type { Document, Model, Types } from "mongoose";
 
 export interface IPlayer extends Document {
   team: Types.ObjectId;
+  userAccount?: Types.ObjectId;
   firstName: string;
   lastName: string;
   birthDate: string;
@@ -25,6 +26,10 @@ const playerSchema = new Schema<IPlayer>(
       ref: "Team",
       required: true,
       index: true,
+    },
+    userAccount: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     firstName: {
       type: String,
@@ -81,6 +86,14 @@ const playerSchema = new Schema<IPlayer>(
     statusUpdatedAt: Date,
   },
   { timestamps: true },
+);
+
+playerSchema.index(
+  { team: 1, userAccount: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { userAccount: { $type: "objectId" } },
+  },
 );
 
 const Player: Model<IPlayer> =

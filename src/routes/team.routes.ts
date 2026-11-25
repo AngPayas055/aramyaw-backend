@@ -1,5 +1,9 @@
 import { Router } from "express";
-
+import {
+  createTeamJoinRequest,
+  listPendingTeamJoinRequests,
+  reviewTeamJoinRequest,
+} from "../controllers/teamJoinRequest.controller.ts";
 import {
   createTeam,
   getMyTeams,
@@ -58,6 +62,24 @@ router.patch(
   authenticateToken,
   requireAdmin,
   updatePlayerStatus,
+);
+
+router.get(
+  "/:teamId/join-requests",
+  authenticateToken,
+  listPendingTeamJoinRequests,
+);
+
+router.post(
+  "/:teamId/join-requests",
+  authenticateToken,
+  createTeamJoinRequest,
+);
+
+router.patch(
+  "/:teamId/join-requests/:requestId",
+  authenticateToken,
+  reviewTeamJoinRequest,
 );
 
 export default router;

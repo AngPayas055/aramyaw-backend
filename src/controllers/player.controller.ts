@@ -47,7 +47,7 @@ function validDate(value: unknown): value is string {
   );
 }
 
-function ageAt(birthDate: string, cutoff: Date): number {
+export function ageAt(birthDate: string, cutoff: Date): number {
   const [year, month, day] = birthDate.split("-").map(Number);
 
   let age = cutoff.getUTCFullYear() - year;

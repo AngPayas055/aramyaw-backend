@@ -28,7 +28,7 @@ function validDate(value) {
         date.toISOString().slice(0, 10) === value &&
         date <= new Date());
 }
-function ageAt(birthDate, cutoff) {
+export function ageAt(birthDate, cutoff) {
     const [year, month, day] = birthDate.split("-").map(Number);
     let age = cutoff.getUTCFullYear() - year;
     if (cutoff.getUTCMonth() + 1 < month ||
