@@ -29,6 +29,9 @@ const playerPaymentSchema = new Schema({
         required: true,
     },
     active: { type: Boolean, default: true, required: true },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    reviewedAt: Date,
+    rejectionReason: { type: String, trim: true, maxlength: 500 },
 }, { timestamps: true });
 playerPaymentSchema.index({ player: 1, season: 1, division: 1 }, { unique: true, partialFilterExpression: { active: true } });
 playerPaymentSchema.index({ method: 1, referenceNumber: 1 }, { unique: true, partialFilterExpression: { active: true } });
