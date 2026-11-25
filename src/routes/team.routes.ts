@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createTeamJoinRequest,
+  listJoinableTeams,
   listPendingTeamJoinRequests,
   reviewTeamJoinRequest,
 } from "../controllers/teamJoinRequest.controller.ts";
@@ -44,6 +45,7 @@ router.delete(
 );
 
 router.get("/mine", authenticateToken, getMyTeams);
+router.get("/joinable", authenticateToken, listJoinableTeams);
 
 router
   .route("/")

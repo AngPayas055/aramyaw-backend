@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTeamJoinRequest, listPendingTeamJoinRequests, reviewTeamJoinRequest, } from "../controllers/teamJoinRequest.controller.js";
+import { createTeamJoinRequest, listJoinableTeams, listPendingTeamJoinRequests, reviewTeamJoinRequest, } from "../controllers/teamJoinRequest.controller.js";
 import { createTeam, getMyTeams, getSeasonTeams, reviewTeam, } from "../controllers/team.controller.js";
 import { authenticateToken } from "../middleware/jwt.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
@@ -11,6 +11,7 @@ router.post("/:teamId/players", authenticateToken, createPlayer);
 router.patch("/:teamId/players/:playerId", authenticateToken, updatePlayer);
 router.delete("/:teamId/players/:playerId", authenticateToken, deletePlayer);
 router.get("/mine", authenticateToken, getMyTeams);
+router.get("/joinable", authenticateToken, listJoinableTeams);
 router
     .route("/")
     .post(authenticateToken, createTeam)

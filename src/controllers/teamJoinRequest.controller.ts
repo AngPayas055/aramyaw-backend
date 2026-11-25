@@ -11,6 +11,34 @@ type JoinRequest = Request & {
   user?: { id: string; role: UserRole };
 };
 
+export async function listJoinableTeams(
+  req: JoinRequest,
+  res: Response,
+): Promise<void> {
+  if (req.user?.role !== "player") {
+    res.status(403).json({ message: "Player access required." });
+    return;
+  }
+
+  const { seasonId } = req.params;
+
+  if (!mongoose.isObjectIdOrHexString(seasonId)) {
+    res.status(400).json({ message: "Invalid season ID." });
+    return;
+  }
+
+  const teams = await Team.find({
+    season: seasonId,
+    status: "approved",
+  })
+    .select("_id name barangay division")
+    .populate("division", "name")
+    .sort({ name: 1, _id: 1 })
+    .lean();
+
+  res.set("Cache-Control", "no-store").json({ teams });
+}
+
 export async function createTeamJoinRequest(
   req: JoinRequest,
   res: Response,
@@ -31,12 +59,18 @@ export async function createTeamJoinRequest(
   }
 
   const [team, player] = await Promise.all([
-    Team.findOne({ _id: teamId, season: seasonId }).select("division"),
+    Team.findOne({
+      _id: teamId,
+      season: seasonId,
+      status: "approved",
+    }).select("division"),
     User.findOne({ _id: req.user.id, role: "player" }).select("+birthDate"),
   ]);
 
   if (!team) {
-    res.status(404).json({ message: "Team not found in this season." });
+    res.status(404).json({
+      message: "Approved team not found in this season.",
+    });
     return;
   }
 
