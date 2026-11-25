@@ -113,7 +113,7 @@ export async function getMyPlayerPayment(req, res) {
         division: team.division,
     })
         .sort({ active: -1, createdAt: -1 })
-        .select("status expectedAmountCentavos")
+        .select("status expectedAmountCentavos rejectionReason")
         .lean();
     res.set("Cache-Control", "no-store").json({ payment });
 }

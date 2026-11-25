@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Team from "../models/Team.js";
 import Division from "../models/Division.js";
 import Player from "../models/Player.js";
+import PlayerPayment from "../models/PlayerPayment.js";
 async function ownedTeam(req, res) {
     const { seasonId, teamId } = req.params;
     if (!mongoose.isObjectIdOrHexString(seasonId) ||
@@ -80,7 +81,30 @@ export async function listPlayers(req, res) {
         const players = await Player.find({ team: team._id }).sort({
             createdAt: 1,
         });
-        res.json({ players });
+        const accountIds = players.flatMap((player) => player.userAccount ? [player.userAccount] : []);
+        const payments = await PlayerPayment.find({
+            player: { $in: accountIds },
+            season: team.season,
+            division: team.division,
+        })
+            .sort({ active: -1, createdAt: -1, _id: -1 })
+            .select("player status")
+            .lean();
+        const latestPaymentByAccount = new Map();
+        for (const payment of payments) {
+            const accountId = String(payment.player);
+            if (!latestPaymentByAccount.has(accountId)) {
+                latestPaymentByAccount.set(accountId, payment);
+            }
+        }
+        res.json({
+            players: players.map((player) => ({
+                ...player.toObject(),
+                registrationPaymentStatus: player.userAccount
+                    ? latestPaymentByAccount.get(String(player.userAccount))?.status ?? "unpaid"
+                    : null,
+            })),
+        });
     }
     catch (error) {
         console.error(error);

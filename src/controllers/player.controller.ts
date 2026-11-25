@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Team from "../models/Team.ts";
 import Division from "../models/Division.ts";
 import Player from "../models/Player.ts";
+import PlayerPayment from "../models/PlayerPayment.ts";
 
 type AuthRequest = Request & {
   user?: { id?: string };
@@ -131,7 +132,36 @@ export async function listPlayers(req: AuthRequest, res: Response) {
       createdAt: 1,
     });
 
-    res.json({ players });
+    const accountIds = players.flatMap((player) =>
+      player.userAccount ? [player.userAccount] : [],
+    );
+
+    const payments = await PlayerPayment.find({
+      player: { $in: accountIds },
+      season: team.season,
+      division: team.division,
+    })
+      .sort({ active: -1, createdAt: -1, _id: -1 })
+      .select("player status")
+      .lean();
+
+    const latestPaymentByAccount = new Map<string, (typeof payments)[number]>();
+
+    for (const payment of payments) {
+      const accountId = String(payment.player);
+      if (!latestPaymentByAccount.has(accountId)) {
+        latestPaymentByAccount.set(accountId, payment);
+      }
+    }
+
+    res.json({
+      players: players.map((player) => ({
+        ...player.toObject(),
+        registrationPaymentStatus: player.userAccount
+          ? latestPaymentByAccount.get(String(player.userAccount))?.status ?? "unpaid"
+          : null,
+      })),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to load players." });
