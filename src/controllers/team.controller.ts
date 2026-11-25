@@ -50,6 +50,14 @@ export async function createTeam(
       res.status(401).json({ message: "Authentication required." });
       return;
     }
+    
+    if (req.user?.role === "player") {
+      res.status(403).json({
+        success: false,
+        message: "Only managers and admins can create teams.",
+      });
+      return;
+    }
 
     if (!mongoose.isObjectIdOrHexString(seasonId)) {
       res.status(400).json({ message: "Invalid season ID." });

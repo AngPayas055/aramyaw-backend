@@ -5,7 +5,14 @@ import { sendCommonEmail } from "../services/email.js";
 import User from "../models/User.js";
 export const register = async (req, res) => {
     try {
-        const { firstName, lastName, email, contactNumber, password, } = req.body;
+        const { firstName, lastName, email, contactNumber, password, role = "user", } = req.body;
+        if (role !== "user" && role !== "player") {
+            res.status(400).json({
+                success: false,
+                message: "Invalid account role.",
+            });
+            return;
+        }
         if (!firstName ||
             !lastName ||
             !email ||
@@ -34,7 +41,7 @@ export const register = async (req, res) => {
             email: email.toLowerCase(),
             contactNumber,
             password: hashedPassword,
-            role: "user",
+            role,
         });
         res.status(201).json({
             success: true,

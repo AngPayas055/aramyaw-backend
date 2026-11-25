@@ -16,7 +16,16 @@ export const register = async (
       email,
       contactNumber,
       password,
+      role = "user",
     } = req.body;
+
+    if (role !== "user" && role !== "player") {
+      res.status(400).json({
+        success: false,
+        message: "Invalid account role.",
+      });
+      return;
+    }
 
     if (
       !firstName ||
@@ -52,7 +61,7 @@ export const register = async (
       email: email.toLowerCase(),
       contactNumber,
       password: hashedPassword,
-      role: "user",
+      role,
     });
 
     res.status(201).json({
