@@ -6,6 +6,7 @@ export type UserRole = "user" | "admin" | "player";
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
+  birthDate?: string;
   email: string;
   contactNumber: string;
   password: string;
@@ -29,6 +30,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true,
+    },
+
+    birthDate: { 
+      type: String, 
+      select: false 
     },
 
     email: {

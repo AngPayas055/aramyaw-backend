@@ -10,6 +10,10 @@ const userSchema = new Schema({
         required: true,
         trim: true,
     },
+    birthDate: {
+        type: String,
+        select: false
+    },
     email: {
         type: String,
         required: true,
