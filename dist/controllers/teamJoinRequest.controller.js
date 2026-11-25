@@ -46,6 +46,14 @@ export async function createTeamJoinRequest(req, res) {
         });
         return;
     }
+    const existingPlayer = await Player.exists({
+        team: team._id,
+        userAccount: req.user.id,
+    });
+    if (existingPlayer) {
+        res.status(409).json({ message: "You are already on this team." });
+        return;
+    }
     try {
         await TeamJoinRequest.init();
         const joinRequest = await TeamJoinRequest.create({
