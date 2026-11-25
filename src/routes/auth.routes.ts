@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import { listMyPlayerTeams } from "../controllers/teamJoinRequest.controller.ts";
 import {
   forgotPassword,
   login,
@@ -18,5 +18,6 @@ router.post("/reset-password", resetPassword);
 
 router.get("/player-profile", authenticateToken, playerProfile);
 router.patch("/player-profile", authenticateToken, playerProfile);
+router.get("/player-teams", authenticateToken, listMyPlayerTeams);
 
 export default router;

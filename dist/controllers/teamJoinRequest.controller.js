@@ -232,3 +232,38 @@ export async function reviewTeamJoinRequest(req, res) {
     });
     res.status(result.code).json(result.body);
 }
+export async function listMyPlayerTeams(req, res) {
+    if (req.user?.role !== "player") {
+        res.status(403).json({ message: "Player access required." });
+        return;
+    }
+    const teamIds = await Player.distinct("team", {
+        userAccount: req.user.id,
+    });
+    const [teams, players] = await Promise.all([
+        Team.find({ _id: { $in: teamIds } })
+            .select("name barangay season division manager")
+            .populate("season", "name")
+            .populate("division", "name")
+            .populate("manager", "firstName lastName")
+            .sort({ name: 1 })
+            .lean(),
+        Player.find({ team: { $in: teamIds } })
+            .select("team firstName lastName jerseyNumber")
+            .sort({ lastName: 1, firstName: 1 })
+            .lean(),
+    ]);
+    res.set("Cache-Control", "no-store").json({
+        teams: teams.map((team) => ({
+            ...team,
+            players: players
+                .filter((player) => String(player.team) === String(team._id))
+                .map(({ _id, firstName, lastName, jerseyNumber }) => ({
+                _id,
+                firstName,
+                lastName,
+                jerseyNumber,
+            })),
+        })),
+    });
+}

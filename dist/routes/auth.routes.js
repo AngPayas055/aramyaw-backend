@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { listMyPlayerTeams } from "../controllers/teamJoinRequest.controller.js";
 import { forgotPassword, login, register, resetPassword, } from "../controllers/auth.controller.js";
 import { playerProfile } from "../controllers/playerProfile.controller.js";
 import { authenticateToken } from "../middleware/jwt.js";
@@ -9,4 +10,5 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/player-profile", authenticateToken, playerProfile);
 router.patch("/player-profile", authenticateToken, playerProfile);
+router.get("/player-teams", authenticateToken, listMyPlayerTeams);
 export default router;
