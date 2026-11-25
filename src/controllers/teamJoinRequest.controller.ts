@@ -333,7 +333,7 @@ export async function listMyPlayerTeams(
     Team.find({ _id: { $in: teamIds } })
       .select("name barangay season division manager")
       .populate("season", "name")
-      .populate("division", "name")
+      .populate("division", "name playerRegistrationFeeCentavos")
       .populate("manager", "firstName lastName")
       .sort({ name: 1 })
       .lean(),

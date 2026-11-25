@@ -21,6 +21,7 @@ const editableFields = [
   "tournamentFormat",
   "playoffTeams",
   "registrationEnabled",
+  "playerRegistrationFeeCentavos",
 ] as const;
 
 function pickFields(body: Record<string, unknown>) {

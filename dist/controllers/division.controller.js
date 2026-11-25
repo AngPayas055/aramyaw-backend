@@ -14,6 +14,7 @@ const editableFields = [
     "tournamentFormat",
     "playoffTeams",
     "registrationEnabled",
+    "playerRegistrationFeeCentavos",
 ];
 function pickFields(body) {
     return Object.fromEntries(editableFields
