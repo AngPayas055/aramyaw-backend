@@ -1,4 +1,5 @@
 import User, {} from "../models/User.js";
+import Player from "../models/Player.js";
 const manilaDateFormat = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Manila",
     year: "numeric",
@@ -23,7 +24,20 @@ export async function playerProfile(req, res) {
     const filter = { _id: req.user.id, role: "player" };
     const fields = "firstName lastName +birthDate";
     let player;
+    const verifiedPlayer = await Player.findOne({
+        userAccount: req.user.id,
+        verificationStatus: "verified",
+    })
+        .sort({ verifiedAt: -1, _id: -1 })
+        .select("firstName lastName birthDate")
+        .lean();
     if (req.method === "PATCH") {
+        if (verifiedPlayer) {
+            res.status(403).json({
+                message: "Only admins can edit a verified player's first name, last name, and birthdate.",
+            });
+            return;
+        }
         const birthDate = req.body?.birthDate;
         if (!isValidBirthDate(birthDate)) {
             res.status(400).json({
@@ -42,9 +56,10 @@ export async function playerProfile(req, res) {
     }
     res.set("Cache-Control", "no-store").json({
         profile: {
-            firstName: player.firstName,
-            lastName: player.lastName,
-            birthDate: player.birthDate ?? null,
+            firstName: verifiedPlayer?.firstName ?? player.firstName,
+            lastName: verifiedPlayer?.lastName ?? player.lastName,
+            birthDate: verifiedPlayer?.birthDate ?? player.birthDate ?? null,
+            identityLocked: Boolean(verifiedPlayer),
         },
     });
 }

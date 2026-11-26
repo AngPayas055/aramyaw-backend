@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import User, { type IUser, type UserRole } from "../models/User.ts";
+import Player from "../models/Player.ts";
 
 type ProfileRequest = Request & {
   user?: { id: string; role: UserRole };
@@ -42,7 +43,21 @@ export async function playerProfile(
     const fields = "firstName lastName +birthDate";
     let player: IUser | null;
 
+    const verifiedPlayer = await Player.findOne({
+      userAccount: req.user.id,
+      verificationStatus: "verified",
+    })
+      .sort({ verifiedAt: -1, _id: -1 })
+      .select("firstName lastName birthDate")
+      .lean();
+
     if (req.method === "PATCH") {
+      if (verifiedPlayer) {
+        res.status(403).json({
+          message: "Only admins can edit a verified player's first name, last name, and birthdate.",
+        });
+        return;
+      }
       const birthDate = req.body?.birthDate;
 
       if (!isValidBirthDate(birthDate)) {
@@ -68,9 +83,10 @@ export async function playerProfile(
 
   res.set("Cache-Control", "no-store").json({
     profile: {
-      firstName: player.firstName,
-      lastName: player.lastName,
-      birthDate: player.birthDate ?? null,
+      firstName: verifiedPlayer?.firstName ?? player.firstName,
+      lastName: verifiedPlayer?.lastName ?? player.lastName,
+      birthDate: verifiedPlayer?.birthDate ?? player.birthDate ?? null,
+      identityLocked: Boolean(verifiedPlayer),
     },
   });
 }

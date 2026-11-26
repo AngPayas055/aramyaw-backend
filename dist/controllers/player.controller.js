@@ -191,11 +191,11 @@ export async function updatePlayer(req, res) {
         const identityChanged = player.firstName !== values.firstName ||
             player.lastName !== values.lastName ||
             player.birthDate !== values.birthDate;
-        Object.assign(player, values);
-        if (identityChanged) {
-            player.verificationStatus = "unverified";
-            player.verifiedBy = undefined;
-            player.verifiedAt = undefined;
+        if (player.verificationStatus === "verified" && identityChanged) {
+            res.status(403).json({
+                message: "Only admins can edit a verified player's first name, last name, and birthdate.",
+            });
+            return;
         }
         await player.save();
         res.json({ player });
@@ -343,6 +343,18 @@ export async function updatePlayerStatus(req, res) {
             res.status(404).json({ message: "Player not found." });
             return;
         }
+        const firstName = body.firstName === undefined
+            ? player.firstName
+            : typeof body.firstName === "string" ? body.firstName.trim() : "";
+        const lastName = body.lastName === undefined
+            ? player.lastName
+            : typeof body.lastName === "string" ? body.lastName.trim() : "";
+        if (!firstName || !lastName || firstName.length > 80 || lastName.length > 80) {
+            res.status(400).json({ message: "Enter a valid first name and last name." });
+            return;
+        }
+        player.firstName = firstName;
+        player.lastName = lastName;
         const birthDate = body.birthDate;
         if (birthDate !== undefined && birthDate !== player.birthDate) {
             const division = await Division.findById(team.division);
