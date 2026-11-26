@@ -16,7 +16,6 @@ import { requireAdmin } from "../middleware/requireAdmin.ts";
 
 import {
   listPlayers,
-  createPlayer,
   updatePlayer,
   deletePlayer,
   listTeamPlayersForAdmin,
@@ -32,7 +31,6 @@ router.get(
   listTeamPlayersForAdmin,
 );
 router.get("/:teamId/players", authenticateToken, listPlayers);
-router.post("/:teamId/players", authenticateToken, createPlayer);
 router.patch(
   "/:teamId/players/:playerId",
   authenticateToken,
