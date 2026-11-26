@@ -1,16 +1,20 @@
 import mongoose from "mongoose";
 import PlayerPayment from "../models/PlayerPayment.js";
-export async function listPendingPlayerPayments(_req, res) {
-    const payments = await PlayerPayment.find({
-        status: "pending",
-        active: true,
-    })
-        .select("player team season division method referenceNumber expectedAmountCentavos paidAt status createdAt")
+export async function listPendingPlayerPayments(req, res) {
+    const status = req.query.status ?? "pending";
+    if (status !== "pending" && status !== "paid" && status !== "rejected") {
+        res.status(400).json({ message: "Invalid payment status." });
+        return;
+    }
+    const payments = await PlayerPayment.find(status === "pending" ? { status, active: true } : { status })
+        .select("player team season division method referenceNumber expectedAmountCentavos paidAt status createdAt reviewedAt rejectionReason")
         .populate("player", "firstName lastName")
         .populate("team", "name")
         .populate("season", "name")
         .populate("division", "name")
-        .sort({ createdAt: 1, _id: 1 })
+        .sort(status === "pending"
+        ? { createdAt: 1, _id: 1 }
+        : { reviewedAt: -1, _id: -1 })
         .lean();
     res.set("Cache-Control", "no-store").json({ payments });
 }
