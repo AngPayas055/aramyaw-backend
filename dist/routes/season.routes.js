@@ -5,8 +5,10 @@ import { createSeason, getSeasons, getSeasonById, updateSeason, } from "../contr
 import { authenticateToken } from "../middleware/jwt.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import divisionRoutes from "./division.routes.js";
+import { listSeasonPlayersForAdmin } from "../controllers/player.controller.js";
 const router = Router();
 const adminOnly = [authenticateToken, requireAdmin];
+router.get("/:seasonId/players", ...adminOnly, listSeasonPlayersForAdmin);
 // Public GET, protected POST
 router
     .route("/")

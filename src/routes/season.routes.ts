@@ -11,11 +11,12 @@ import {
 import { authenticateToken } from "../middleware/jwt.ts";
 import { requireAdmin } from "../middleware/requireAdmin.ts";
 import divisionRoutes from "./division.routes.ts";
-
+import { listSeasonPlayersForAdmin } from "../controllers/player.controller.ts";
 const router = Router();
 
 const adminOnly = [authenticateToken, requireAdmin];
 
+router.get("/:seasonId/players", ...adminOnly, listSeasonPlayersForAdmin);
 // Public GET, protected POST
 router
   .route("/")

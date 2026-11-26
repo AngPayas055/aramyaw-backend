@@ -559,3 +559,127 @@ export async function updatePlayerStatus(
     });
   }
 }
+
+export async function listSeasonPlayersForAdmin(req: Request, res: Response) {
+  try {
+    const { seasonId } = req.params;
+    const { divisionId, playingStatus, search, page: rawPage } = req.query;
+    const page = rawPage === undefined ? 1 : Number(rawPage);
+    const pageSize = 10;
+
+    if (
+      !mongoose.isObjectIdOrHexString(seasonId) ||
+      (divisionId !== undefined && !mongoose.isObjectIdOrHexString(divisionId)) ||
+      (playingStatus !== undefined &&
+        playingStatus !== "allowed" &&
+        playingStatus !== "suspended" &&
+        playingStatus !== "banned") ||
+      (search !== undefined && (typeof search !== "string" || search.length > 100)) ||
+      !Number.isSafeInteger(page) ||
+      page < 1 ||
+      page > Math.floor(Number.MAX_SAFE_INTEGER / pageSize)
+    ) {
+      res.status(400).json({ message: "Invalid player filters or page." });
+      return;
+    }
+
+    const teams = await Team.find({ season: seasonId })
+      .select("name status division")
+      .populate<{ division: { _id: mongoose.Types.ObjectId; name: string } | null }>(
+        "division",
+        "name",
+      )
+      .lean();
+
+    const teamsById = new Map(teams.map((team) => [String(team._id), team]));
+    const divisions = new Map<string, { value: string; label: string }>();
+
+    for (const team of teams) {
+      if (team.division) {
+        const value = String(team.division._id);
+        divisions.set(value, { value, label: team.division.name });
+      }
+    }
+
+    const eligibleTeams = teams.filter(
+      (team) => !divisionId || String(team.division?._id) === divisionId,
+    );
+
+    const query = typeof search === "string" ? search.trim() : "";
+    const pattern = query
+      ? new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+      : null;
+
+    const filters = {
+      team: { $in: eligibleTeams.map((team) => team._id) },
+      ...(playingStatus === "allowed"
+      ? ({ playingStatus: { $in: ["allowed", null] } } as const)
+      : playingStatus === "suspended" || playingStatus === "banned"
+        ? ({ playingStatus } as const)
+        : {}),
+      ...(pattern
+        ? {
+            $or: [
+              {
+                team: {
+                  $in: eligibleTeams
+                    .filter((team) =>
+                      pattern.test(team.name) || pattern.test(team.division?.name ?? ""),
+                    )
+                    .map((team) => team._id),
+                },
+              },
+              {
+                $expr: {
+                  $or: [
+                    {
+                      $regexMatch: {
+                        input: { $concat: ["$firstName", " ", "$lastName"] },
+                        regex: pattern,
+                      },
+                    },
+                    {
+                      $regexMatch: {
+                        input: { $ifNull: [{ $toString: "$jerseyNumber" }, ""] },
+                        regex: pattern,
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      Player.find(filters)
+        .sort({ lastName: 1, firstName: 1, _id: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      Player.countDocuments(filters),
+    ]);
+
+    res.json({
+      total,
+      divisions: [...divisions.values()],
+      players: rows.flatMap((player) => {
+        const team = teamsById.get(String(player.team));
+        if (!team) return [];
+
+        return [{
+          ...player,
+          teamId: String(team._id),
+          teamName: team.name,
+          teamStatus: team.status,
+          divisionId: team.division ? String(team.division._id) : "",
+          divisionName: team.division?.name ?? "Unavailable",
+        }];
+      }),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load players." });
+  }
+}
