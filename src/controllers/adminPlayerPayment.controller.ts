@@ -5,7 +5,7 @@ import PlayerPayment from "../models/PlayerPayment.ts";
 
 type AdminPaymentRequest = Request & {
   user?: { id: string };
-};
+}; 
 
 export async function listPendingPlayerPayments(
   req: Request,
