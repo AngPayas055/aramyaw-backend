@@ -3,6 +3,7 @@ import Team from "../models/Team.js";
 import Division from "../models/Division.js";
 import Player from "../models/Player.js";
 import PlayerPayment from "../models/PlayerPayment.js";
+import User from "../models/User.js";
 async function ownedTeam(req, res) {
     const { seasonId, teamId } = req.params;
     if (!mongoose.isObjectIdOrHexString(seasonId) ||
@@ -394,7 +395,29 @@ export async function updatePlayerStatus(req, res) {
         player.suspensionUntil = suspensionUntil;
         player.statusUpdatedBy = reviewer;
         player.statusUpdatedAt = now;
-        await player.save();
+        await mongoose.connection.transaction(async (session) => {
+            if (player.userAccount) {
+                const account = await User.findOne({
+                    _id: player.userAccount,
+                    role: "player",
+                }).session(session);
+                if (account) {
+                    if (verificationStatus === "verified") {
+                        account.firstName = player.firstName;
+                        account.lastName = player.lastName;
+                        account.birthDate = player.birthDate;
+                        account.identityVerifiedAt ??= player.verifiedAt ?? now;
+                        account.identityVerifiedBy ??= player.verifiedBy ?? reviewer;
+                    }
+                    else if (player.isModified("verificationStatus")) {
+                        account.identityVerifiedAt = undefined;
+                        account.identityVerifiedBy = undefined;
+                    }
+                    await account.save({ session });
+                }
+            }
+            await player.save({ session });
+        });
         res.json({
             message: "Player status updated.",
             player,

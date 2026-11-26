@@ -16,6 +16,8 @@ export interface IUser extends Document {
   updatedAt: Date;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  identityVerifiedAt?: Date;
+  identityVerifiedBy?: mongoose.Types.ObjectId;
 }
 
 const userSchema = new Schema<IUser>(
@@ -74,6 +76,11 @@ const userSchema = new Schema<IUser>(
     resetPasswordExpires: {
       type: Date,
       select: false,
+    },
+    identityVerifiedAt: Date,
+    identityVerifiedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

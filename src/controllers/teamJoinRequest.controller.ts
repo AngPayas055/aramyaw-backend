@@ -240,7 +240,7 @@ export async function reviewTeamJoinRequest(
         _id: joinRequest.player,
         role: "player",
       })
-        .select("firstName lastName +birthDate")
+        .select("firstName lastName +birthDate identityVerifiedAt identityVerifiedBy")
         .session(session);
 
       if (!account?.birthDate) {
@@ -302,6 +302,9 @@ export async function reviewTeamJoinRequest(
         firstName: account.firstName,
         lastName: account.lastName,
         birthDate: account.birthDate,
+        verificationStatus: account.identityVerifiedAt ? "verified" : "unverified",
+        verifiedAt: account.identityVerifiedAt,
+        verifiedBy: account.identityVerifiedBy,
       });
 
       await rosterPlayer.save({ session });

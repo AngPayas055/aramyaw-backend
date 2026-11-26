@@ -5,6 +5,7 @@ import Team from "../models/Team.ts";
 import Division from "../models/Division.ts";
 import Player from "../models/Player.ts";
 import PlayerPayment from "../models/PlayerPayment.ts";
+import User from "../models/User.ts";
 
 type AuthRequest = Request & {
   user?: { id?: string };
@@ -546,7 +547,31 @@ export async function updatePlayerStatus(
     player.statusUpdatedBy = reviewer;
     player.statusUpdatedAt = now;
 
-    await player.save();
+    await mongoose.connection.transaction(async (session) => {
+      if (player.userAccount) {
+        const account = await User.findOne({
+          _id: player.userAccount,
+          role: "player",
+        }).session(session);
+
+        if (account) {
+          if (verificationStatus === "verified") {
+            account.firstName = player.firstName;
+            account.lastName = player.lastName;
+            account.birthDate = player.birthDate;
+            account.identityVerifiedAt ??= player.verifiedAt ?? now;
+            account.identityVerifiedBy ??= player.verifiedBy ?? reviewer;
+          } else if (player.isModified("verificationStatus")) {
+            account.identityVerifiedAt = undefined;
+            account.identityVerifiedBy = undefined;
+          }
+
+          await account.save({ session });
+        }
+      }
+
+      await player.save({ session });
+    });
 
     res.json({
       message: "Player status updated.",

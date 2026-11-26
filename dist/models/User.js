@@ -48,6 +48,11 @@ const userSchema = new Schema({
         type: Date,
         select: false,
     },
+    identityVerifiedAt: Date,
+    identityVerifiedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+    },
 }, {
     timestamps: true,
 });
